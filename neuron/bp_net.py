@@ -175,6 +175,11 @@ class GenData:
         return data, labels
 
 
+import random
+import math
+from tqdm import trange
+
+
 class MyNN:
     def __init__(self, input_size, hidden_size, output_size, learning_rate):
         self.input = input_size
@@ -203,20 +208,23 @@ class MyNN:
         return x * (1 - x)
 
     def forward(self, inputs):
-        # i,j,k, input:1,i
+        # Input to hidden layer
         Oi2h = [
-            sum(x * w + b for x, w, b in zip(inputs, col, self.Bi2h))
-            for col in zip(*self.Wi2h)
-        ]  # 1,j
+            sum(x * w for x, w in zip(inputs, col)) + b
+            for col, b in zip(zip(*self.Wi2h), self.Bi2h)
+        ]
         Oh = list(map(self.func, Oi2h))
+
+        # Hidden to output layer
         Oh2o = [
-            sum(x * w + b for x, w, b in zip(Oh, col, self.Bh2o))
-            for col in zip(*self.Wh2o)
+            sum(x * w for x, w in zip(Oh, col)) + b
+            for col, b in zip(zip(*self.Wh2o), self.Bh2o)
         ]
         Oo = list(map(self.func, Oh2o))
         return Oh, Oo
 
     def backward(self, inputs, hidden_outputs, actual_outputs, expected_outputs):
+        # Output layer error and delta
         Eout = [
             expected - actual
             for expected, actual in zip(expected_outputs, actual_outputs)
@@ -225,6 +233,7 @@ class MyNN:
             error * self.Dfunc(output) for error, output in zip(Eout, actual_outputs)
         ]
 
+        # Hidden layer error and delta
         Ehide = [
             sum(delta * w for delta, w in zip(Dout, col)) for col in zip(*self.Wh2o)
         ]
@@ -232,15 +241,19 @@ class MyNN:
             error * self.Dfunc(output) for error, output in zip(Ehide, hidden_outputs)
         ]
 
+        # Update weights and biases from hidden to output layer
         for i, hidden_output in enumerate(hidden_outputs):
             for j, output_delta in enumerate(Dout):
                 self.Wh2o[i][j] += self.lr * output_delta * hidden_output
-                self.Bh2o[j] += self.lr * output_delta
+        for j, output_delta in enumerate(Dout):
+            self.Bh2o[j] += self.lr * output_delta
 
+        # Update weights and biases from input to hidden layer
         for i, input_val in enumerate(inputs):
             for j, hidden_delta in enumerate(Dhide):
                 self.Wi2h[i][j] += self.lr * hidden_delta * input_val
-                self.Bi2h[j] += self.lr * hidden_delta
+        for j, hidden_delta in enumerate(Dhide):
+            self.Bi2h[j] += self.lr * hidden_delta
 
     def train(self, training_data, training_labels, epochs):
         for epoch in trange(epochs):
