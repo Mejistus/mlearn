@@ -39,8 +39,7 @@ def chooseBestFeatureToSplit(dataSet):
     maxGain = -1000
     bestFeatureIndex = -1
     for i in range(featureNumber):
-        #featureSet = set(dataSet[:][i])  #错误写法：dataSet[:][i]仍然是获取行
-        featureCol = [x[i] for x in dataSet]   #取列表某列的方法！！
+        featureCol = [x[i] for x in dataSet]  
         featureSet = set(featureCol)
         splitedDataSet = []
         for av in featureSet:
@@ -102,7 +101,7 @@ def createTestData():
 
 #读取西瓜数据集2.0
 def readWatermelonDataSet():
-    ifile = open("周志华_西瓜数据集2.txt",encoding='gbk')
+    ifile = open("周志华_西瓜数据集2.txt",encoding='UTF-8')
     featureName = ifile.readline()  #表头
     labels = (featureName.split(' ')[0]).split(',')
     lines = ifile.readlines()
@@ -117,21 +116,15 @@ def readWatermelonDataSet():
 
 def main():
     dataSet, labels = createTestData()
-    #dataSet[0][-1] = "maybe"
     ent = calcInformationEntropy(dataSet)
-    print(ent)
     bestFeature = chooseBestFeatureToSplit(dataSet)
-    print(bestFeature)
-
     tree = createTree(dataSet, labels)
-    print(tree)
-
     melonDataSet, melonLabels = readWatermelonDataSet()
-    #print(melonDataSet)
-    print(melonLabels)
+    print(f'melonLabels is {melonLabels}')
     melonBestFeature = chooseBestFeatureToSplit(melonDataSet)
+
     tree = createTree(melonDataSet, melonLabels)
-    print(tree)
+    __import__('pprint').pprint(tree)
 
 if __name__ == "__main__":
     main()
