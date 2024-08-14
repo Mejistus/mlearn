@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 import random
 
-n_samples = 300
+n_samples = 100
 n_features = 2
 centers = 4
-cluster_std = 1.0
+cluster_std = 3.0
 
 X, y = make_blobs(
     n_samples=n_samples,
